@@ -1,0 +1,32 @@
+@startuml
+participant StackOverflow
+actor Golang_ETL #red
+participant HBase
+participant S3
+actor Cruncher #red
+participant HDFS
+actor WebRunner #red
+group ETL
+StackOverflow -> Golang_ETL: RSS Feed: Skills & Job Descs
+Golang_ETL -> Golang_ETL: Extract Skills\n& Job URLs 
+Golang_ETL -> HBase: Store Skills
+StackOverflow -> Golang_ETL: Pull Jobs Descriptions
+Golang_ETL -> Golang_ETL: Clean Jobs HTML
+Golang_ETL -> S3: Store Cleaned Jobs
+end
+group Crunch Model
+S3 -> Cruncher: Pull Jobs
+HBase -> Cruncher: Pull Skills
+Cruncher -> Cruncher: Create TF-IDF Model
+Cruncher -> HDFS: Store TF-IDF Model 
+end
+group Web Interaction
+HDFS -> WebRunner: Load Model
+HBase -> WebRunner: Load Skills
+actor WebUser #yellow
+WebUser -> WebRunner: Resume Provided
+WebRunner -> WebRunner: Calculate Jobs
+WebRunner -> WebUser: Here are Jobs
+WebUser -> StackOverflow: Review Jobs
+end
+@enduml
